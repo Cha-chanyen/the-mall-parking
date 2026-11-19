@@ -49,7 +49,19 @@ app.use('/api', (req, res, next) => { // เปิด CORS ให้ระบบ
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
+
+// ---------- เสิร์ฟหน้าเว็บ ----------
+// ถ้ามีโฟลเดอร์ public/index.html ให้เสิร์ฟจากโฟลเดอร์นั้น
+// ถ้าไม่มี (index.html อยู่ที่ root ของ repo) ให้ส่งเฉพาะ index.html
+// ไม่เปิดเผย server.js, package.json หรือไฟล์ข้อมูลผ่านเบราว์เซอร์
+const PUBLIC_DIR = path.join(__dirname, 'public');
+const ROOT_INDEX = path.join(__dirname, 'index.html');
+
+if (fs.existsSync(path.join(PUBLIC_DIR, 'index.html'))) {
+  app.use(express.static(PUBLIC_DIR));
+} else {
+  app.get('/', (req, res) => res.sendFile(ROOT_INDEX));
+}
 
 app.get('/api/events', (req, res) => {
   res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
@@ -105,7 +117,7 @@ app.post('/api/reserve', (req, res) => {
   res.json({ success: true, message: 'จองสำเร็จ', nickname: nick, floor: c.f, slot: c.s });
 });
 
-// API 3: คืนที่จอด  POST /api/release  { nickname, floor, slot }
+// API 3: คืนที่จอดรถ  POST /api/release  { nickname, floor, slot }
 // - เรียกจากระบบอื่น: ต้องตรงทั้ง ชื่อเล่น + ชั้น + ช่อง
 // - เรียกจากหน้าเว็บ (มี X-Client-Token): ต้องเป็นเครื่องที่จองไว้เท่านั้น
 app.post('/api/release', (req, res) => {
