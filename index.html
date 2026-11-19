@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Mall – จองที่จอดรถ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap">
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#1c2430;--muted:#6b7684;--free:#2e9e5b;--busy:#e02424;--mine:#1a56f0;--line:#dfe4ea;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--card:#1b212a;--text:#e9edf2;--muted:#93a0af;--free:#3dbb73;--busy:#ef4444;--mine:#3b82f6;--line:#2c3541}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 4px}
+.status{font-size:12px;color:var(--muted);margin-bottom:12px}
+.summary{display:flex;gap:10px;margin-bottom:14px}
+.box{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.box b{display:block;font-size:26px}
+.box span{font-size:13px;color:var(--muted)}
+.free b{color:var(--free)}.busy b{color:var(--busy)}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.tabs button{flex:1;min-width:84px;padding:10px 8px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--mine);border-color:var(--mine);color:#fff}
+.tabs small{display:block;font-size:11px;opacity:.8}
+.lot{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.lot h2{margin:0 0 10px;font-size:16px;display:flex;justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.slot{aspect-ratio:3/4;border-radius:8px;border:2px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:inherit;padding:2px;overflow:hidden}
+.slot svg{width:50%;height:auto}
+.slot em{font-style:normal;font-size:11px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot.free{border-color:var(--free);color:var(--free)}
+.slot.free:hover{background:var(--free);color:#fff}
+.slot.busy{border-color:var(--busy);background:var(--busy);color:#fff}
+.slot.mine{border-color:var(--mine);background:var(--mine);color:#fff}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90%}
+.toast.show{opacity:1}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
+.overlay.show{display:flex}
+.dlg{background:var(--card);border-radius:14px;padding:18px;width:100%;max-width:320px}
+.dlg h3{margin:0 0 6px;font-size:17px}
+.dlg p{margin:0 0 12px;color:var(--muted);font-size:14px}
+.dlg input{width:100%;padding:10px;font-size:16px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);margin-bottom:12px}
+.row{display:flex;gap:8px}
+.row button{flex:1;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:15px;cursor:pointer}
+.row button.ok{background:var(--mine);border-color:var(--mine);color:#fff}
+.row button.danger{background:var(--busy);border-color:var(--busy);color:#fff}
+.row button:disabled{opacity:.5}
+.note{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--busy);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted);margin-bottom:12px}
+.card2{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card2 h3{margin:8px 0 4px;font-size:16px}
+.muted{color:var(--muted);font-size:14px;margin:0 0 8px}
+.ep{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ep .m{background:var(--mine);color:#fff;border-radius:6px;padding:2px 8px;font-size:12px}
+.ep code{font-size:14px;word-break:break-all}
+.card2 table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px}
+.card2 th,.card2 td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.card2 pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;overflow-x:auto;margin:4px 0 8px;white-space:pre-wrap}
+.lbl{font-size:12px;color:var(--muted);margin-top:6px}
+.try{display:flex;gap:6px;flex-wrap:wrap}
+.try input{flex:1;min-width:90px;padding:8px;font-size:14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+.try button{padding:8px 14px;border-radius:8px;border:1px solid var(--mine);background:var(--mine);color:#fff;cursor:pointer}
+.try button:disabled{opacity:.5}
+:root{--bg:#f5f2ec;--card:#fff;--text:#1a2033;--muted:#6f7685;--line:#e6e0d4;--gold:#c8a24a;--navy:#14213d}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--card:#161e33;--text:#eef0f6;--muted:#9aa3b8;--line:#26304a;--gold:#d8b45c;--navy:#0a1020}}
+body{font-family:'Prompt',system-ui,-apple-system,'Noto Sans Thai',sans-serif}
+.wrap{max-width:760px;padding:16px 16px 40px}
+.brand{position:relative;overflow:hidden;background:linear-gradient(135deg,#14213d 0%,#27407a 100%);color:#fff;border-radius:20px;padding:22px 20px;margin-bottom:12px;box-shadow:0 8px 24px rgba(20,33,61,.25)}
+.brand::after{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:2px solid rgba(200,162,74,.55);box-shadow:0 0 0 18px rgba(200,162,74,.12)}
+.brand small{display:block;letter-spacing:.35em;font-size:11px;color:#d8b45c}
+.brand .logo{font-size:32px;font-weight:700;letter-spacing:.14em;margin:2px 0 4px}
+.brand .sub{font-size:13px;opacity:.85}
+.status{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin-bottom:12px}
+.box{border-radius:14px;box-shadow:0 2px 10px rgba(20,33,61,.07);border-top:3px solid var(--gold)}
+.box b{font-weight:700}
+.tabs button{border-radius:999px;font-family:inherit}
+.tabs button.on{background:var(--gold);border-color:var(--gold);color:#14213d;font-weight:600}
+.lot{border-radius:18px;box-shadow:0 4px 18px rgba(20,33,61,.08);padding:16px}
+.lot h2{font-size:17px;font-weight:600;padding-bottom:10px;border-bottom:2px solid var(--gold)}
+.grid{gap:10px;margin-top:12px}
+.slot{border-radius:8px 8px 12px 12px;border-width:2px;font-family:inherit}
+.slot.free{background:rgba(46,158,91,.08)}
+.slot.free:hover{background:var(--free);color:#fff}
+.card2{border-radius:16px;box-shadow:0 2px 10px rgba(20,33,61,.06)}
+.ep .m{background:var(--navy);color:#d8b45c}
+.try button{background:var(--navy);border-color:var(--navy);color:#d8b45c;font-family:inherit}
+.dlg{border-radius:18px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand svg{flex:none;position:relative;z-index:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+.bt{position:relative;z-index:1}
+.brand .logo{font-size:30px;line-height:1.1}
+.mybox{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--mine);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.mybox .mt{font-size:13px;font-weight:600;margin-right:4px}
+.mybox button{background:var(--mine);color:#fff;border:0;border-radius:999px;padding:6px 12px;font-size:13px;font-family:inherit;cursor:pointer}
+.foot{max-width:760px;margin:0 auto;padding:8px 16px 32px;text-align:center;font-size:12px;color:var(--muted);line-height:1.7}
+.foot b{letter-spacing:.14em;color:var(--text)}
+:root,:root:not([data-theme="light"]){--bg:#0b101d;--card:#131b2e;--text:#f1ece1;--muted:#a3a9b8;--line:#2a3350;--gold:#d4af5f;--navy:#070b16;--free:#3dbb73;--busy:#ef4444;--mine:#3b82f6}
+body{background:radial-gradient(90% 40% at 50% 0%,rgba(212,175,95,.10),transparent 70%),var(--bg)}
+.brand{background:linear-gradient(135deg,#0c1630 0%,#1b2c57 100%);border:1px solid rgba(212,175,95,.35)}
+.brand .logo{font-family:'Cormorant Garamond',serif;font-size:34px;letter-spacing:.2em;color:#f3e2b3}
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:34px 20px;margin-bottom:14px;text-align:center;background:radial-gradient(120% 90% at 85% 0%,rgba(212,175,95,.22),transparent 55%),linear-gradient(160deg,#101a33,#070b16);border:1px solid rgba(212,175,95,.4);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.eyebrow{font-family:'Cormorant Garamond',serif;letter-spacing:.4em;color:var(--gold);font-size:14px}
+.hero h2{font-size:27px;margin:10px 0;line-height:1.4;font-weight:600}
+.hero h2 em{font-style:normal;color:var(--gold)}
+.hero p{color:var(--muted);margin:0 0 18px;font-size:14px}
+.cta{background:linear-gradient(135deg,#f0d58c,#b8892b);color:#1a1405;border:0;border-radius:999px;padding:12px 30px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 6px 20px rgba(212,175,95,.35)}
+.hstat{display:flex;justify-content:center;gap:26px;margin-top:22px}
+.hstat b{display:block;font-size:30px;color:var(--gold);font-family:'Cormorant Garamond',serif}
+.hstat span{font-size:12px;color:var(--muted)}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.feat div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.feat b{display:block;margin-bottom:4px;color:var(--gold)}
+.feat span{font-size:13px;color:var(--muted)}
+.hf{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.hf h3{margin:0 0 6px;font-size:15px}
+.hfr{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 0;color:var(--text);font-family:inherit;font-size:14px;cursor:pointer;text-align:left}
+.hfr:last-child{border-bottom:0}
+.hfr .n{min-width:56px}
+.hfr .bar{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.hfr .bar i{display:block;height:100%;background:var(--free)}
+.row button.ok{background:var(--mine);border-color:var(--mine)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class='brand'><svg viewBox='0 0 64 64' width='60' height='60' role='img' aria-label='The Mall'><defs><linearGradient id='lg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#f6e0a0'/><stop offset='1' stop-color='#b8892b'/></linearGradient></defs><circle cx='32' cy='32' r='29' fill='#0c1630' stroke='url(#lg)' stroke-width='3'/><circle cx='32' cy='32' r='24' fill='none' stroke='url(#lg)' stroke-width='.8' opacity='.6'/><path d='M17 43V21l15 15 15-15v22' fill='none' stroke='url(#lg)' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><circle cx='49' cy='14' r='9' fill='url(#lg)'/><text x='49' y='18.5' text-anchor='middle' font-size='12' font-weight='700' font-family='Arial,sans-serif' fill='#0c1630'>P</text></svg><div class='bt'><small>PARKING RESERVATION</small><div class='logo'>THE MALL</div><div class='sub'>ระบบจองที่จอดรถ · 5 ชั้น · 100 ช่อง</div></div></div>
+  <div class="status" id="status">กำลังเชื่อมต่อ…</div>
+  <div class="tabs" id="nav"><button id="navHome" class="on">หน้าแรก</button><button id="navLot">จองที่จอดรถ</button><button id="navApi">API</button></div>
+  <div id='viewHome'>
+    <div class='hero'><div class='eyebrow'>PRIVILEGED PARKING</div><h2>จอดสบาย ทุกการช้อปปิ้ง<br><em>จองที่จอดล่วงหน้า</em> ที่ THE MALL</h2><p>เลือกชั้น เลือกช่อง จองได้ทันที เห็นสถานะที่จอดแบบเรียลไทม์</p><button class='cta' id='ctaBook'>จองที่จอดเลย</button><div class='hstat'><div><b id='hFree'>–</b><span>ช่องว่างตอนนี้</span></div><div><b>5</b><span>ชั้นจอด</span></div><div><b>100</b><span>ช่องจอด</span></div></div></div>
+    <div class='feat'><div><b>เรียลไทม์</b><span>ทุกคนเห็นสถานะช่องจอดตรงกันทันที</span></div><div><b>จองง่าย</b><span>เลือกช่องว่าง ใส่ชื่อเล่น เสร็จใน 2 ขั้นตอน</span></div><div><b>เชื่อมต่อระบบ</b><span>มี API สำหรับดู จอง และคืนที่จอด</span></div></div>
+    <div class='hf'><h3>เลือกชั้นที่ต้องการ</h3><div id='hFloors'></div></div>
+  </div>
+  <div id="viewLot" style="display:none"><div class="summary">
+    <div class="box free"><b id="tFree">–</b><span>ว่างทั้งหมด</span></div>
+    <div class="box busy"><b id="tBusy">–</b><span>ไม่ว่าง</span></div>
+    <div class="box"><b id="tAll">100</b><span>ทั้งหมด</span></div>
+  </div>
+  <div id='myBox' class='mybox' style='display:none'></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="lot">
+    <h2><span id="floorName"></span><span id="floorFree" style="color:var(--free)"></span></h2>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <span><i style="background:var(--free)"></i>ว่าง (กดเพื่อจอง)</span>
+      <span><i style="background:var(--busy)"></i>มีคนจอง</span>
+      <span><i style="background:var(--mine)"></i>ของฉัน (กดเพื่อเอารถออก)</span>
+    </div>
+  </div>
+  </div>
+  <div id='viewApi' style='display:none'>
+    <div class='note'>เรียกได้จริงที่ <code id='baseUrl'></code> · ตัวทดลองด้านล่างเรียกเซิร์ฟเวอร์จริง</div>
+    <div id='apiBox'></div>
+  </div>
+</div>
+
+<div class='foot'><b>THE MALL</b> · ระบบจองที่จอดรถ<br>ข้อมูลอัปเดตแบบเรียลไทม์ · © 2026 The Mall</div>
+
+<div class="overlay" id="ovReserve"><div class="dlg">
+  <h3 id="rTitle">จองช่องจอด</h3>
+  <p>ใส่ชื่อเล่นของคุณ</p>
+  <input id="nick" maxlength="12" placeholder="เช่น มิว" autocomplete="off">
+  <div class="row"><button id="rCancel">ยกเลิก</button><button class="ok" id="rOk">จอง</button></div>
+</div></div>
+
+<div class="overlay" id="ovLeave"><div class="dlg">
+  <h3 id="lTitle">เอารถออก</h3>
+  <p>ต้องการยกเลิกการจองช่องนี้ใช่ไหม</p>
+  <div class="row"><button id="lCancel">ไม่</button><button class="danger" id="lOk">เอารถออก</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script>
+const FLOORS=5, SLOTS=20;
+const $=id=>document.getElementById(id);
+const key=(f,s)=>'f'+(f+1)+'-s'+String(s+1).padStart(2,'0');
+let db=null, uid=null, cur=0, booked={}, loaded=false, pending=null;
+const carSvg='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h.5A1.5 1.5 0 0 1 21 12.5V17h-2v1.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V17H8v1.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V17H4v-4.5A1.5 1.5 0 0 1 5.5 11zm2.1 0h9.8l-1-3H8.1z"/></svg>';
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+const floorFree=f=>{let n=0;for(let s=0;s<SLOTS;s++)if(!booked[key(f,s)])n++;return n};
+
+function render(){
+  let free=0;for(let f=0;f<FLOORS;f++)free+=floorFree(f);
+  const all=FLOORS*SLOTS;
+  $('tFree').textContent=loaded?free:'–';$('tBusy').textContent=loaded?all-free:'–';
+  $('tabs').innerHTML='';
+  for(let f=0;f<FLOORS;f++){
+    const b=document.createElement('button');
+    b.className=f===cur?'on':'';
+    b.innerHTML='ชั้น '+(f+1)+'<small>ว่าง '+floorFree(f)+'</small>';
+    b.onclick=()=>{cur=f;render()};
+    $('tabs').appendChild(b);
+  }
+  const hf=$('hFloors');if(hf){hf.innerHTML='';for(let f=0;f<FLOORS;f++){const fr=floorFree(f);const hb=document.createElement('button');hb.className='hfr';hb.innerHTML=`<span class='n'>ชั้น ${f+1}</span><span class='bar'><i style='width:${fr/SLOTS*100}%'></i></span><span>ว่าง ${fr}</span>`;hb.onclick=()=>{cur=f;showView('lot');render()};hf.appendChild(hb)}}$('hFree').textContent=loaded?free:'–';
+  const mineK=Object.keys(booked).filter(k=>booked[k].owner===uid).sort();const mb=$('myBox');mb.style.display=mineK.length?'':'none';mb.innerHTML='';if(mineK.length){const t=document.createElement('div');t.className='mt';t.textContent='ที่จอดของฉัน';mb.appendChild(t);mineK.forEach(k=>{const d=booked[k];const b=document.createElement('button');b.textContent='ชั้น '+d.floor+' · ช่อง '+d.slot+'  ✕';b.onclick=()=>{pending={f:d.floor-1,s:d.slot-1,k};$('lTitle').textContent='เอารถออก ชั้น '+d.floor+' ช่อง '+d.slot;$('ovLeave').classList.add('show')};mb.appendChild(b)})}
+  $('floorName').textContent='ชั้น '+(cur+1);
+  $('floorFree').textContent='ว่าง '+floorFree(cur)+'/'+SLOTS;
+  $('grid').innerHTML='';
+  for(let s=0;s<SLOTS;s++){
+    const k=key(cur,s), d=booked[k];
+    const el=document.createElement('button');
+    const mine=d&&uid&&d.owner===uid;
+    el.className='slot '+(d?(mine?'mine':'busy'):'free');
+    const n=document.createElement('span');n.textContent=s+1;el.appendChild(n);
+    if(d){el.insertAdjacentHTML('beforeend',carSvg);const e=document.createElement('em');e.textContent=d.name||'';el.appendChild(e)}
+    el.onclick=()=>onSlot(cur,s);
+    $('grid').appendChild(el);
+  }
+}
+
+function onSlot(f,s){
+  if(!db){toast('ยังเชื่อมต่อไม่ได้');return}
+  const k=key(f,s), d=booked[k];
+  pending={f,s,k};
+  if(!d){
+    $('rTitle').textContent='จองชั้น '+(f+1)+' ช่อง '+(s+1);
+    $('nick').value='';$('ovReserve').classList.add('show');setTimeout(()=>$('nick').focus(),50);
+  }else if(uid&&d.owner===uid){
+    $('lTitle').textContent='เอารถออก ชั้น '+(f+1)+' ช่อง '+(s+1);
+    $('ovLeave').classList.add('show');
+  }else{
+    toast('ช่องนี้ถูกจองโดย '+(d.name||'คนอื่น')+' (เฉพาะคนจองเท่านั้นที่ยกเลิกได้)');
+  }
+}
+
+const TOKEN=(()=>{try{let t=localStorage.getItem('pk_token');if(!t){t=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now());localStorage.setItem('pk_token',t)}return t}catch(e){return 'anon-'+Math.random().toString(36).slice(2)}})();
+async function call(path,opt){opt=opt||{};const r=await fetch(path,Object.assign({},opt,{headers:{'Content-Type':'application/json','X-Client-Token':TOKEN}}));return r.json()}
+async function refresh(){const r=await call('/api/slots');const m={};for(const v of Object.values(r.slots||{})){m[key(v.floor-1,v.slot-1)]={floor:v.floor,slot:v.slot,name:v.name,owner:v.mine?uid:'other'}}booked=m;loaded=true;$('status').textContent='🟢 ข้อมูลอัปเดตแบบเรียลไทม์';render()}
+async function reserve(){
+  const name=$('nick').value.trim();
+  if(!name){toast('กรุณาใส่ชื่อเล่น');return}
+  const {f,s}=pending;const ok=$('rOk');ok.disabled=true;
+  try{const r=await call('/api/reserve',{method:'POST',body:JSON.stringify({nickname:name,floor:f+1,slot:s+1})});toast(r.success?('จองชั้น '+(f+1)+' ช่อง '+(s+1)+' แล้ว'):r.message);await refresh()}
+  catch(e){toast('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้')}
+  finally{ok.disabled=false;$('ovReserve').classList.remove('show')}
+}
+async function leave(){
+  const {f,s,k}=pending;const d=booked[k];
+  try{const r=await call('/api/release',{method:'POST',body:JSON.stringify({nickname:d?d.name:'-',floor:f+1,slot:s+1})});toast(r.success?'เอารถออกแล้ว':r.message);await refresh()}
+  catch(e){toast('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้')}
+  $('ovLeave').classList.remove('show');
+}
+$('rCancel').onclick=()=>$('ovReserve').classList.remove('show');
+$('rOk').onclick=reserve;
+$('nick').addEventListener('keydown',e=>{if(e.key==='Enter')reserve()});
+$('lCancel').onclick=()=>$('ovLeave').classList.remove('show');
+$('lOk').onclick=leave;
+
+async function start(){
+  uid='me';render();
+  const b=$('baseUrl');if(b)b.textContent=location.origin;
+  try{await refresh()}catch(e){$('status').textContent='เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'}
+  db=true;
+  const es=new EventSource('/api/events');
+  es.addEventListener('update',()=>refresh().catch(()=>{}));
+  es.onopen=()=>refresh().catch(()=>{});
+  es.onerror=()=>{$('status').textContent='กำลังเชื่อมต่อใหม่…'};
+  setInterval(()=>refresh().catch(()=>{}),30000);
+}
+const api={
+ async available(floor){return (await fetch('/api/slots/available'+(floor?('?floor='+encodeURIComponent(floor)):''))).json()},
+ async reserve(nick,floor,slot){return (await fetch('/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nickname:nick,floor:floor,slot:slot})})).json()},
+ async release(nick,floor,slot){return (await fetch('/api/release',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nickname:nick,floor:floor,slot:slot})})).json()}
+};
+const DOCS=[
+{m:'GET',p:'/api/slots/available',t:'1. ดูที่จอดที่ว่าง',d:'ส่งชั้นเพื่อดูเฉพาะชั้นนั้น ถ้าไม่ส่งชั้นจะได้ช่องว่างของทุกชั้น',params:[['floor','ไม่บังคับ','เลขชั้น 1-5']],req:'GET /api/slots/available?floor=2',ex:[{success:true,floor:2,count:3,available:[1,4,7]},{success:true,totalAvailable:57,floors:[{floor:1,count:12,available:[1,2,3]}]}],run:v=>api.available(v.floor)},
+{m:'POST',p:'/api/reserve',t:'2. จองที่จอด',d:'ถ้าช่องว่างจะคืนข้อความ จองสำเร็จ ถ้ามีคนจองอยู่แล้วจะคืนข้อความ ช่องไม่ว่าง',params:[['nickname','บังคับ','ชื่อเล่น เช่น มิว'],['floor','บังคับ','เลขชั้น 1-5'],['slot','บังคับ','เลขช่อง 1-20']],req:'POST /api/reserve  (Body JSON: nickname, floor, slot)',ex:[{success:true,message:'จองสำเร็จ'},{success:false,message:'ช่องไม่ว่าง'}],run:v=>api.reserve(v.nickname,v.floor,v.slot)},
+{m:'POST',p:'/api/release',t:'3. คืนที่จอด / ออกจากช่อง',d:'คืนได้เมื่อชื่อเล่น ชั้น และเลขช่อง ตรงกับการจองเท่านั้น ถ้าไม่ตรงจะคืนไม่ได้',params:[['nickname','บังคับ','ชื่อเล่นที่ใช้จอง'],['floor','บังคับ','เลขชั้น 1-5'],['slot','บังคับ','เลขช่อง 1-20']],req:'POST /api/release  (Body JSON: nickname, floor, slot)',ex:[{success:true,message:'คืนที่จอดสำเร็จ'},{success:false,message:'คืนไม่ได้: ข้อมูลไม่ตรงกับผู้จอง'}],run:v=>api.release(v.nickname,v.floor,v.slot)}
+];
+function buildApi(){const box=$('apiBox');const nl=String.fromCharCode(10);DOCS.forEach(D=>{const c=document.createElement('div');c.className='card2';const rows=D.params.map(p=>`<tr><td><code>${p[0]}</code></td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join('');const ins=D.params.map(p=>`<input data-n='${p[0]}' placeholder='${p[0]}'>`).join('');c.innerHTML=`<div class='ep'><b class='m'>${D.m}</b><code>${D.p}</code></div><h3>${D.t}</h3><p class='muted'>${D.d}</p><table><tr><th>พารามิเตอร์</th><th></th><th>คำอธิบาย</th></tr>${rows}</table><div class='lbl'>ตัวอย่างคำขอ</div><pre>${D.req}</pre><div class='lbl'>ตัวอย่างผลลัพธ์</div><pre>${D.ex.map(e=>JSON.stringify(e,null,2)).join(nl+nl)}</pre><div class='lbl'>ลองเรียก</div><div class='try'>${ins}<button>เรียก API</button></div><pre class='out'>ผลลัพธ์จะแสดงที่นี่</pre>`;const out=c.querySelector('.out'),btn=c.querySelector('button');btn.onclick=async()=>{const v={};c.querySelectorAll('input').forEach(i=>{v[i.dataset.n]=i.value.trim()});btn.disabled=true;out.textContent='กำลังเรียก…';try{out.textContent=JSON.stringify(await D.run(v),null,2)}catch(e){out.textContent='เกิดข้อผิดพลาด'}btn.disabled=false};box.appendChild(c)})}
+const VIEWS=['home','lot','api'];
+function showView(v){VIEWS.forEach(x=>{const N=x[0].toUpperCase()+x.slice(1);$('view'+N).style.display=x===v?'':'none';$('nav'+N).className=x===v?'on':''});window.scrollTo(0,0)}
+$('navHome').onclick=()=>showView('home');$('navLot').onclick=()=>showView('lot');$('navApi').onclick=()=>showView('api');$('ctaBook').onclick=()=>showView('lot');
+buildApi();
+start();
+</script>
+<div id="bn-root"></div>
+<script>window.onload = function() { BN.init({ version: '1.0' }) }</script>
+<script>
+  (function(d, s, id) {
+    var js, bjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://console.botnoi.ai/customerchat/index.js';
+    bjs.parentNode.insertBefore(js, bjs);
+  }(document, 'script', 'bn-jssdk'));
+</script>
+<div class="bn-customerchat" bot_id="6afe7ccd3fa4ba6863581c12"></div>
+</body>
+</html>
